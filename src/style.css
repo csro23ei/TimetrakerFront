@@ -1,0 +1,45 @@
+.taskContainer {
+    border: 1px solid lightblue;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+h2 {
+    color: blue;
+}
+
+p.startPageText {
+    color: black;
+}
+
+button {
+    background-color: white;
+    color: black;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: yellow;
+}
+
+.deleteBtn {
+    background-color: red;
+    color: white;
+}
+
+.startBtn {
+    background-color: green;
+    color: white;
+}
+
+.stopBtn {
+    background-color: orange;
+    color: white;
+}
+
+.addBtn {
+    background-color: blue;
+    color: white;
+}
