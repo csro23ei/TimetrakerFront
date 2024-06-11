@@ -6,19 +6,36 @@ function ListInactiveTasks() {
   const [inactiveTasks, setInactiveTasks] = useState<Task[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:8080/tasks/deleted")
-      .then((res) => res.json())
-      .then((data) => setInactiveTasks(data));
+    const fetchInactiveTasks = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/tasks/deleted");
+        const data = await response.json();
+        setInactiveTasks(data);
+      } catch (error) {
+        console.error("Error fetching inactive tasks:", error);
+      }
+    };
+
+    fetchInactiveTasks();
   }, []);
 
   const handleHardDelete = async (taskId: string) => {
-    fetch(`http://localhost:8080/task/${taskId}`, {
-      method: "DELETE",
-    });
-    setInactiveTasks((prevInactiveTasks) =>
-      prevInactiveTasks.filter((task) => task.id !== taskId)
-    );
-    console.log("Task successfully deleted");
+    try {
+      const response = await fetch(`http://localhost:8080/task/${taskId}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        setInactiveTasks((prevInactiveTasks) =>
+          prevInactiveTasks.filter((task) => task.id !== taskId)
+        );
+        console.log("Task successfully deleted");
+      } else {
+        console.error("Failed to delete task");
+      }
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }
   };
 
   return (

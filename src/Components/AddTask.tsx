@@ -36,8 +36,10 @@ function AddTask() {
           onChange={(e) => setNewTask(e.target.value)}
           placeholder="Add new tasks"
           required
-        ></input>
-        <button className="addBtn">Add</button>
+        />
+        <button className="addBtn" type="submit">
+          Add
+        </button>
       </form>
     </div>
   );
