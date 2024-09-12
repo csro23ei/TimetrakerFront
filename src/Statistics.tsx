@@ -1,6 +1,6 @@
-// src/Task/Statistics.tsx
+
 import React from 'react';
-import { Task } from './task'; // Import the Task interface
+import { Task } from './task'; 
 
 interface StatisticsProps {
   tasks: Task[];

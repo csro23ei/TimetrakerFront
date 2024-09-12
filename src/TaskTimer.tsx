@@ -1,6 +1,6 @@
-// src/Task/TaskTimer.tsx
 import React, { useEffect, useState } from 'react';
-import { Task } from './task'; // Import the Task interface
+import { Task } from './task'; 
+import { formatTime } from './timeUtils';
 
 interface TaskTimerProps {
   task: Task;
@@ -13,7 +13,7 @@ const TaskTimer: React.FC<TaskTimerProps> = ({ task, stopTask }) => {
   useEffect(() => {
     const startTime = new Date(task.taskDate).getTime();
     const interval = setInterval(() => {
-      setElapsedTime((new Date().getTime() - startTime) / 1000 / 60); // Time in minutes
+      setElapsedTime((new Date().getTime() - startTime) / 1000); 
     }, 1000);
 
     return () => clearInterval(interval);
@@ -22,7 +22,7 @@ const TaskTimer: React.FC<TaskTimerProps> = ({ task, stopTask }) => {
   return (
     <div>
       <h3>Current Task: {task.taskName}</h3>
-      <p>Elapsed Time: {elapsedTime.toFixed(2)} minutes</p>
+      <p>Elapsed Time: {formatTime(elapsedTime)}</p>
       <button onClick={stopTask}>Stop Task</button>
     </div>
   );

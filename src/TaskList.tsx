@@ -1,6 +1,6 @@
-// src/Task/TaskList.tsx
+
 import React from 'react';
-import { Task } from './task'; // Import the Task interface
+import { Task } from './task'; 
 
 interface TaskListProps {
   tasks: Task[];

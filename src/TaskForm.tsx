@@ -1,6 +1,6 @@
-// src/Task/TaskForm.tsx
+
 import React, { useState } from 'react';
-import { NewTask } from './task'; // Import the NewTask interface
+import { NewTask } from './task'; 
 
 interface TaskFormProps {
   addTask: (task: NewTask) => void;
@@ -25,12 +25,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ addTask }) => {
         value={taskName}
         onChange={(e) => setTaskName(e.target.value)}
       />
-      <input
-        type="number"
-        placeholder="Time (minutes)"
-        value={time}
-        onChange={(e) => setTime(parseInt(e.target.value))}
-      />
+     
       <button type="submit">Add Task</button>
     </form>
   );

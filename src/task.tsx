@@ -3,7 +3,7 @@ export interface Task {
     id: string;
     taskName: string;
     time: number;
-    taskDate: string; // ISO date string format
+    taskDate: string; 
     deleted: boolean;
   }
   

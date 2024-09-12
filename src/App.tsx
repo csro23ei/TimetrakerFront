@@ -3,31 +3,47 @@ import TaskList from './TaskList';
 import TaskForm from './TaskForm';
 import TaskTimer from './TaskTimer';
 import Statistics from './Statistics';
+import CompletedTasks from './CompletedTasks';
 import { Task, NewTask } from './task'; 
 
 function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
   const [currentTask, setCurrentTask] = useState<Task | null>(null);
 
-  
   useEffect(() => {
-    fetchTasks();
+    fetchActiveTasks();
+    fetchCompletedTasks();
   }, []);
 
-  const fetchTasks = async () => {
+  
+  const fetchActiveTasks = async () => {
     try {
       const response = await fetch('http://localhost:8080/tasks/tasks/active');
       if (!response.ok) {
-        throw new Error(`Failed to fetch tasks: ${response.status} ${response.statusText}`);
+        throw new Error(`Failed to fetch active tasks: ${response.status} ${response.statusText}`);
       }
       const data: Task[] = await response.json();
       setTasks(data);
     } catch (error) {
-      console.error('Error fetching tasks:', error);
+      console.error('Error fetching active tasks:', error);
     }
   };
 
- 
+  
+  const fetchCompletedTasks = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/tasks/tasks/completed');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch completed tasks: ${response.status} ${response.statusText}`);
+      }
+      const data: Task[] = await response.json();
+      setCompletedTasks(data);
+    } catch (error) {
+      console.error('Error fetching completed tasks:', error);
+    }
+  };
+
   const addTask = async (task: NewTask) => {
     try {
       const response = await fetch('http://localhost:8080/tasks/task', {
@@ -49,7 +65,6 @@ function App() {
     }
   };
 
-  
   const removeTask = async (id: string) => {
     try {
       const response = await fetch(`http://localhost:8080/tasks/task/${id}`, {
@@ -66,20 +81,19 @@ function App() {
     }
   };
 
-  
   const startTask = (task: Task) => {
     setCurrentTask({ ...task, taskDate: new Date().toISOString() });
   };
 
- 
   const stopTask = async () => {
     if (currentTask) {
       const endTime = new Date();
       const startTime = new Date(currentTask.taskDate);
-      const timeSpent = (endTime.getTime() - startTime.getTime()) / 1000 / 60; // Time in minutes
+      const timeSpent = (endTime.getTime() - startTime.getTime()) / 1000 / 60;
 
       try {
-        const response = await fetch(`http://localhost:8080/tasks/task/${currentTask.id}/time`, {
+        
+        const response = await fetch(`http://localhost:8080/tasks/task/${currentTask.id}/complete`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -91,8 +105,8 @@ function App() {
           throw new Error('Failed to update task time');
         }
 
-        setCurrentTask(null);
-        fetchTasks(); 
+        setTasks(tasks.filter((task) => task.id !== currentTask.id)); 
+        setCompletedTasks([...completedTasks, { ...currentTask, time: currentTask.time + timeSpent }]); 
       } catch (error) {
         console.error('Error stopping task:', error);
       }
@@ -106,6 +120,7 @@ function App() {
       <TaskList tasks={tasks} removeTask={removeTask} startTask={startTask} />
       {currentTask && <TaskTimer task={currentTask} stopTask={stopTask} />}
       <Statistics tasks={tasks} />
+      <CompletedTasks tasks={completedTasks} /> 
     </div>
   );
 }
