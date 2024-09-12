@@ -4,11 +4,11 @@ import { Task } from './task'; // Import the Task interface
 
 interface TaskListProps {
   tasks: Task[];
-  editTask: (id: string, updatedTask: Partial<Task>) => void;
+  removeTask: (id: string) => void;
   startTask: (task: Task) => void;
 }
 
-const TaskList: React.FC<TaskListProps> = ({ tasks, editTask, startTask }) => {
+const TaskList: React.FC<TaskListProps> = ({ tasks, removeTask, startTask }) => {
   return (
     <div>
       <h2>Task List</h2>
@@ -17,7 +17,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, editTask, startTask }) => {
           <li key={task.id}>
             {task.taskName} - {task.time} mins
             <button onClick={() => startTask(task)}>Start</button>
-            <button onClick={() => editTask(task.id, { taskName: task.taskName })}>Edit</button>
+            <button onClick={() => removeTask(task.id)}>Delete</button>
           </li>
         ))}
       </ul>

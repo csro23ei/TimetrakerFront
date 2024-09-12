@@ -1,25 +1,24 @@
-// App.tsx
 import React, { useState, useEffect } from 'react';
 import TaskList from './TaskList';
 import TaskForm from './TaskForm';
 import TaskTimer from './TaskTimer';
 import Statistics from './Statistics';
-import { Task, NewTask } from './task'; // Import interfaces consistently
+import { Task, NewTask } from './task'; 
 
 function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [currentTask, setCurrentTask] = useState<Task | null>(null);
 
-  // Fetch tasks from the backend
+  
   useEffect(() => {
     fetchTasks();
   }, []);
 
   const fetchTasks = async () => {
     try {
-      const response = await fetch('/tasks/active');
+      const response = await fetch('http://localhost:8080/tasks/tasks/active');
       if (!response.ok) {
-        throw new Error('Failed to fetch tasks');
+        throw new Error(`Failed to fetch tasks: ${response.status} ${response.statusText}`);
       }
       const data: Task[] = await response.json();
       setTasks(data);
@@ -28,10 +27,10 @@ function App() {
     }
   };
 
-  // Add new task
+ 
   const addTask = async (task: NewTask) => {
     try {
-      const response = await fetch('/task', {
+      const response = await fetch('http://localhost:8080/tasks/task', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -50,34 +49,29 @@ function App() {
     }
   };
 
-  // Edit task
-  const editTask = async (id: string, updatedTask: Partial<Task>) => {
+  
+  const removeTask = async (id: string) => {
     try {
-      const response = await fetch(`/task/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedTask),
+      const response = await fetch(`http://localhost:8080/tasks/task/${id}`, {
+        method: 'DELETE',
       });
 
       if (!response.ok) {
-        throw new Error('Failed to edit task');
+        throw new Error('Failed to remove task');
       }
 
-      const data: Task = await response.json();
-      setTasks(tasks.map((task) => (task.id === id ? data : task)));
+      setTasks(tasks.filter((task) => task.id !== id));
     } catch (error) {
-      console.error('Error editing task:', error);
+      console.error('Error removing task:', error);
     }
   };
 
-  // Start task (Check-in)
+  
   const startTask = (task: Task) => {
     setCurrentTask({ ...task, taskDate: new Date().toISOString() });
   };
 
-  // Stop task (Check-out)
+ 
   const stopTask = async () => {
     if (currentTask) {
       const endTime = new Date();
@@ -85,7 +79,7 @@ function App() {
       const timeSpent = (endTime.getTime() - startTime.getTime()) / 1000 / 60; // Time in minutes
 
       try {
-        const response = await fetch(`/task/${currentTask.id}/time`, {
+        const response = await fetch(`http://localhost:8080/tasks/task/${currentTask.id}/time`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -98,7 +92,7 @@ function App() {
         }
 
         setCurrentTask(null);
-        fetchTasks(); // Refresh tasks to update the time
+        fetchTasks(); 
       } catch (error) {
         console.error('Error stopping task:', error);
       }
@@ -109,7 +103,7 @@ function App() {
     <div className="App">
       <h1>Time Tracker</h1>
       <TaskForm addTask={addTask} />
-      <TaskList tasks={tasks} editTask={editTask} startTask={startTask} />
+      <TaskList tasks={tasks} removeTask={removeTask} startTask={startTask} />
       {currentTask && <TaskTimer task={currentTask} stopTask={stopTask} />}
       <Statistics tasks={tasks} />
     </div>
