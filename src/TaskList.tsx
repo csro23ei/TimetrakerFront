@@ -1,39 +1,28 @@
 import React from 'react';
-
-interface Task {
-  id: number;
-  name: string;
-  timeElapsed: number;
-}
+import { Task } from './task'; 
 
 interface TaskListProps {
   tasks: Task[];
-  onStart: (taskId: number) => void;
-  onStop: (taskId: number) => void;
+  removeTask: (id: string) => void;
+  startTask?: (task: Task) => void;
+  title: string;
 }
 
-const TaskList: React.FC<TaskListProps> = ({ tasks, onStart, onStop }) => {
-  const formatTime = (timeElapsed: number) => {
-    const hours = Math.floor(timeElapsed / 3600);
-    const minutes = Math.floor((timeElapsed % 3600) / 60);
-    const seconds = timeElapsed % 60;
-    return `${hours} timmar ${minutes} minuter ${seconds} sekunder`;
-  };
-
+const TaskList: React.FC<TaskListProps> = ({ tasks, removeTask, startTask, title }) => {
   return (
     <div>
-      <h2>Arbetsuppgifter</h2>
+      <h2>{title}</h2>
       <ul>
-        {tasks.map((task: Task) => (
+        {tasks.map((task) => (
           <li key={task.id}>
-            {task.name} - {formatTime(task.timeElapsed)}
-            <button onClick={() => onStart(task.id)}>Start</button>
-            <button onClick={() => onStop(task.id)}>Stop</button>
+            {task.taskName} - {task.time} mins
+            {startTask && <button onClick={() => startTask(task)}>Start</button>}
+            <button onClick={() => removeTask(task.id)}>Delete</button>
           </li>
         ))}
       </ul>
     </div>
   );
-}
+};
 
 export default TaskList;

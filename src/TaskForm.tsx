@@ -1,29 +1,34 @@
-import React, { useState, ChangeEvent, FormEvent } from 'react';
+import React, { useState } from 'react';
+import { NewTask } from './task'; 
 
 interface TaskFormProps {
-  onSubmit: (taskName: string) => void;
+  addTask: (task: NewTask) => void;
 }
 
-const TaskForm: React.FC<TaskFormProps> = ({ onSubmit }) => {
-  const [taskName, setTaskName] = useState<string>('');
+const TaskForm: React.FC<TaskFormProps> = ({ addTask }) => {
+  const [taskName, setTaskName] = useState('');
+  const [time, setTime] = useState(0);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(taskName);
+    addTask({ taskName, time, deleted: false });
     setTaskName('');
-  }
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setTaskName(e.target.value);
-  }
+    setTime(0);
+  };
 
   return (
     <form onSubmit={handleSubmit}>
-      <input type="text" value={taskName} onChange={handleChange} />
-      <button type="submit">Lägg till</button>
+      <input
+        type="text"
+        placeholder="Task Name"
+        value={taskName}
+        onChange={(e) => setTaskName(e.target.value)}
+      />
+     
+      <button type="submit">Add Task</button>
     </form>
   );
-}
+};
 
 export default TaskForm;
 
