@@ -1,0 +1,22 @@
+/* App.css */
+
+.App {
+    padding: 20px;
+}
+
+.task-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.task-column {
+    flex: 1;
+    margin: 0 10px;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+h2 {
+    margin-top: 0;
+}

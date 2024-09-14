@@ -1,128 +1,128 @@
 import React, { useState, useEffect } from 'react';
 import TaskList from './TaskList';
 import TaskForm from './TaskForm';
-import TaskTimer from './TaskTimer';
-import Statistics from './Statistics';
-import CompletedTasks from './CompletedTasks';
-import { Task, NewTask } from './task'; 
+import './App.css'; 
+interface Task {
+  id: number;
+  name: string;
+  timeElapsed: number;
+  intervalId?: ReturnType<typeof setInterval>; 
+}
 
-function App() {
+const App: React.FC = () => {
+ 
   const [tasks, setTasks] = useState<Task[]>([]);
+
   const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
-  const [currentTask, setCurrentTask] = useState<Task | null>(null);
 
   useEffect(() => {
-    fetchActiveTasks();
-    fetchCompletedTasks();
+    const savedTasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+    const savedCompletedTasks = JSON.parse(localStorage.getItem('completedTasks') || '[]');
+    setTasks(savedTasks);
+    setCompletedTasks(savedCompletedTasks);
   }, []);
 
-  
-  const fetchActiveTasks = async () => {
-    try {
-      const response = await fetch('http://localhost:8080/tasks/tasks/active');
-      if (!response.ok) {
-        throw new Error(`Failed to fetch active tasks: ${response.status} ${response.statusText}`);
-      }
-      const data: Task[] = await response.json();
-      setTasks(data);
-    } catch (error) {
-      console.error('Error fetching active tasks:', error);
-    }
-  };
+  useEffect(() => {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+    localStorage.setItem('completedTasks', JSON.stringify(completedTasks));
+  }, [tasks, completedTasks]);
 
-  
-  const fetchCompletedTasks = async () => {
-    try {
-      const response = await fetch('http://localhost:8080/tasks/tasks/completed');
-      if (!response.ok) {
-        throw new Error(`Failed to fetch completed tasks: ${response.status} ${response.statusText}`);
-      }
-      const data: Task[] = await response.json();
-      setCompletedTasks(data);
-    } catch (error) {
-      console.error('Error fetching completed tasks:', error);
-    }
-  };
-
-  const addTask = async (task: NewTask) => {
-    try {
-      const response = await fetch('http://localhost:8080/tasks/task', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(task),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to add task');
-      }
-
-      const data: Task = await response.json();
-      setTasks([...tasks, data]);
-    } catch (error) {
-      console.error('Error adding task:', error);
-    }
-  };
-
-  const removeTask = async (id: string) => {
-    try {
-      const response = await fetch(`http://localhost:8080/tasks/task/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to remove task');
-      }
-
-      setTasks(tasks.filter((task) => task.id !== id));
-    } catch (error) {
-      console.error('Error removing task:', error);
-    }
-  };
-
-  const startTask = (task: Task) => {
-    setCurrentTask({ ...task, taskDate: new Date().toISOString() });
-  };
-
-  const stopTask = async () => {
-    if (currentTask) {
-      const endTime = new Date();
-      const startTime = new Date(currentTask.taskDate);
-      const timeSpent = (endTime.getTime() - startTime.getTime()) / 1000 / 60;
-
-      try {
-        
-        const response = await fetch(`http://localhost:8080/tasks/task/${currentTask.id}/complete`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ time: currentTask.time + timeSpent }),
+  const startTask = (taskId: number) => {
+    const taskIndex = tasks.findIndex(task => task.id === taskId);
+    const activeTaskIndex = tasks.findIndex(task => task.intervalId);
+    
+    if (taskIndex !== -1 && activeTaskIndex === -1) {
+      const startTime = Date.now();
+      const intervalId = setInterval(() => {
+        const timeElapsed = Math.floor((Date.now() - startTime) / 1000);
+        setTasks(prevState => {
+          const updatedTasks = [...prevState];
+          updatedTasks[taskIndex].timeElapsed = timeElapsed;
+          return updatedTasks;
         });
-
-        if (!response.ok) {
-          throw new Error('Failed to update task time');
-        }
-
-        setTasks(tasks.filter((task) => task.id !== currentTask.id)); 
-        setCompletedTasks([...completedTasks, { ...currentTask, time: currentTask.time + timeSpent }]); 
-      } catch (error) {
-        console.error('Error stopping task:', error);
+      }, 1000);
+  
+      const updatedTasks = [...tasks];
+      updatedTasks[taskIndex].intervalId = intervalId;
+      setTasks(updatedTasks);
+    } else if (activeTaskIndex !== -1) {
+      
+      const confirmMessage = "Det finns redan en aktiv uppgift. Vill du starta en till? OK komer låta dig starta två saker samtidigt";
+      const result = window.confirm(confirmMessage);
+      if (result) {
+    
+        const startTime = Date.now();
+        const intervalId = setInterval(() => {
+          const timeElapsed = Math.floor((Date.now() - startTime) / 1000);
+          setTasks(prevState => {
+            const updatedTasks = [...prevState];
+            updatedTasks[taskIndex].timeElapsed = timeElapsed;
+            return updatedTasks;
+          });
+        }, 1000);
+  
+        const updatedTasks = [...tasks];
+        updatedTasks[taskIndex].intervalId = intervalId;
+        setTasks(updatedTasks);
       }
     }
+  };
+  
+  const stopTask = (taskId: number) => {
+    const taskIndex = tasks.findIndex(task => task.id === taskId);
+    if (taskIndex !== -1 && tasks[taskIndex].intervalId) {
+      clearInterval(tasks[taskIndex].intervalId);
+      const completedTask = tasks[taskIndex];
+      setCompletedTasks(prevState => [...prevState, completedTask]);
+      const updatedTasks = tasks.filter(task => task.id !== taskId);
+      setTasks(updatedTasks);
+    }
+  };
+
+ 
+  const removeCompletedTask = (taskId: number) => {
+    const updatedCompletedTasks = completedTasks.filter(task => task.id !== taskId);
+    setCompletedTasks(updatedCompletedTasks);
+  };
+
+
+  const addTask = (taskName: string) => {
+    const newTask = {
+      id: Date.now(),
+      name: taskName,
+      timeElapsed: 0,
+    };
+    setTasks(prevState => [...prevState, newTask]);
   };
 
   return (
-    <div className="App">
-      <h1>Time Tracker</h1>
-      <TaskForm addTask={addTask} />
-      <TaskList tasks={tasks} removeTask={removeTask} startTask={startTask} />
-      {currentTask && <TaskTimer task={currentTask} stopTask={stopTask} />}
-      <Statistics tasks={tasks} />
-      <CompletedTasks tasks={completedTasks} /> 
+    <div className="app-container">
+      <div className="task-section">
+        <h2>Vad gör du nu?</h2>
+        <TaskForm onSubmit={addTask} />
+        <div className="task-container">
+         
+          <TaskList tasks={tasks} onStart={startTask} onStop={stopTask} />
+        </div>
+      </div>
+      <div className="completed-task-section">
+        <h2>Det har du gjort</h2>
+        <div className="completed-task-container">
+          <h3>Avslutade uppgifter</h3>
+          <ul>
+            {completedTasks.map(task => (
+              <li key={task.id} className="completed-task-item">
+                {task.name} - {Math.floor(task.timeElapsed / 3600)} timmar {Math.floor((task.timeElapsed % 3600) / 60)} minuter {task.timeElapsed % 60} sekunder
+                <button onClick={() => removeCompletedTask(task.id)}>Ta bort</button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
     </div>
   );
-}
+};
 
 export default App;
+
+

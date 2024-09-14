@@ -1,28 +1,39 @@
-
 import React from 'react';
-import { Task } from './task'; 
+
+interface Task {
+  id: number;
+  name: string;
+  timeElapsed: number;
+}
 
 interface TaskListProps {
   tasks: Task[];
-  removeTask: (id: string) => void;
-  startTask: (task: Task) => void;
+  onStart: (taskId: number) => void;
+  onStop: (taskId: number) => void;
 }
 
-const TaskList: React.FC<TaskListProps> = ({ tasks, removeTask, startTask }) => {
+const TaskList: React.FC<TaskListProps> = ({ tasks, onStart, onStop }) => {
+  const formatTime = (timeElapsed: number) => {
+    const hours = Math.floor(timeElapsed / 3600);
+    const minutes = Math.floor((timeElapsed % 3600) / 60);
+    const seconds = timeElapsed % 60;
+    return `${hours} timmar ${minutes} minuter ${seconds} sekunder`;
+  };
+
   return (
     <div>
-      <h2>Task List</h2>
+      <h2>Arbetsuppgifter</h2>
       <ul>
-        {tasks.map((task) => (
+        {tasks.map((task: Task) => (
           <li key={task.id}>
-            {task.taskName} - {task.time} mins
-            <button onClick={() => startTask(task)}>Start</button>
-            <button onClick={() => removeTask(task.id)}>Delete</button>
+            {task.name} - {formatTime(task.timeElapsed)}
+            <button onClick={() => onStart(task.id)}>Start</button>
+            <button onClick={() => onStop(task.id)}>Stop</button>
           </li>
         ))}
       </ul>
     </div>
   );
-};
+}
 
 export default TaskList;
