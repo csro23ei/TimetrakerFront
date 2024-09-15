@@ -1,0 +1,1 @@
+.App{display:flex;justify-content:center;padding:20px}.main-content{display:flex;flex-direction:row;width:100%;max-width:1200px}.task-section{flex:3}.info-box{flex:1;margin-left:20px;padding:15px;background-color:#f1f1f1;border:1px solid #ddd;border-radius:5px}.info-box h2{margin-top:0}.info-box p{font-size:14px;line-height:1.6}
